@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Converter</title>
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color-light: #4a90e2;
+            --secondary-color-light: #50e3c2;
+            --background-light: #f7f9fc;
+            --text-color-light: #333;
+            --container-background-light: #ffffff;
+            --input-border-light: #dfe4ea;
+            --input-focus-shadow-light: rgba(74, 144, 226, 0.4);
+            --binary-bit-off-light: #e0e6ed;
+            --binary-bit-on-light: linear-gradient(45deg, #4a90e2, #50e3c2);
+            --binary-bit-text-light: #ffffff;
+            --toggle-bg-light: #dcdde1;
+            --toggle-slider-light: #ffffff;
+            --scrollbar-thumb-light: #c4c9df;
+            --scrollbar-track-light: #f7f9fc;
+
+            /* Dark Theme */
+            --primary-color-dark: #FF00A3;
+            --secondary-color-dark: #f6b93b;
+            --background-dark: #1e272e;
+            --text-color-dark: #f5f6fa;
+            --container-background-dark: #2f3640;
+            --input-border-dark: #485460;
+            --input-focus-shadow-dark: rgba(251, 25, 150, 0.5);
+            --binary-bit-off-dark: #485460;
+            --binary-bit-on-dark: linear-gradient(45deg, #FF00A3, #ffe600);
+            --binary-bit-text-dark: #1e272e;
+            --toggle-bg-dark: #485460;
+            --toggle-slider-dark: #f5f6fa;
+            --scrollbar-thumb-dark: #5a6878;
+            --scrollbar-track-dark: #1e272e;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-light);
+            color: var(--text-color-light);
+            transition: background-color 0.3s, color 0.3s;
+            box-sizing: border-box;
+        }
+
+        body.dark-mode {
+            background-color: var(--background-dark);
+            color: var(--text-color-dark);
+        }
+        
+        ::-webkit-scrollbar {
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track-light);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb-light);
+            border-radius: 10px;
+        }
+        body.dark-mode::-webkit-scrollbar-track {
+            background: var(--scrollbar-track-dark);
+        }
+        body.dark-mode::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb-dark);
+        }
+
+
+        .container {
+            background-color: var(--container-background-light);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .container {
+            background-color: var(--container-background-dark);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-bg-light);
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        body.dark-mode .slider {
+            background-color: var(--toggle-bg-dark);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--toggle-slider-light);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        body.dark-mode .slider:before {
+            background-color: var(--toggle-slider-dark);
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color-light);
+        }
+
+        body.dark-mode input:checked + .slider {
+            background-color: var(--primary-color-dark);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            margin-bottom: 2rem;
+            color: #7f8c8d;
+        }
+
+        body.dark-mode header p {
+            color: #bdc3c7;
+        }
+
+        .converter-wrapper {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .converter label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .converter input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--input-border-light);
+            border-radius: 8px;
+            font-size: 1.3rem;
+            text-align: center;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            background-color: transparent;
+            color: inherit;
+        }
+
+        body.dark-mode .converter input {
+            border-color: var(--input-border-dark);
+        }
+
+        .converter input:focus {
+            outline: none;
+            border-color: var(--primary-color-light);
+            box-shadow: 0 0 10px var(--input-focus-shadow-light);
+        }
+
+        body.dark-mode .converter input:focus {
+            border-color: var(--primary-color-dark);
+            box-shadow: 0 0 10px var(--input-focus-shadow-dark);
+        }
+
+        .binary-illustration h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .binary-bits-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            perspective: 1000px;
+            /* CORE CHANGE: Prevent wrapping and allow scrolling */
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 10px; /* Add padding for scrollbar and aesthetics */
+            margin: -10px; /* Counteract padding to maintain alignment */
+        }
+
+        .binary-bit-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0; /* Prevent bits from squeezing */
+        }
+
+        .binary-bit {
+            background-color: var(--binary-bit-off-light);
+            width: 55px;
+            height: 55px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            border-radius: 10px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        body.dark-mode .binary-bit {
+            background-color: var(--binary-bit-off-dark);
+        }
+
+        .binary-bit.on {
+            background: var(--binary-bit-on-light);
+            color: var(--binary-bit-text-light);
+            transform: scale(1) rotateY(360deg);
+        }
+
+        body.dark-mode .binary-bit.on {
+            background: var(--binary-bit-on-dark);
+            color: var(--binary-bit-text-dark);
+        }
+
+        .power-of-two {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            opacity: 0.7;
+        }
+
+        footer {
+            margin-top: 2.5rem;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 2rem;
+            }
+            .container {
+                padding: 2rem 3rem;
+            }
+            .converter-wrapper {
+                grid-template-columns: 1fr 1fr;
+                gap: 2.5rem;
+            }
+            header h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 650px) {
+            .binary-bits-container { gap: 10px; }
+            .binary-bit { width: 50px; height: 50px; font-size: 1.6rem; }
+        }
+        
+        @media (max-width: 550px) {
+            .binary-bits-container { gap: 6px; }
+            .binary-bit { width: 40px; height: 40px; font-size: 1.4rem; }
+            .power-of-two { font-size: 0.7rem; }
+        }
+
+        @media (max-width: 480px) {
+            .binary-bit { width: 40px; height: 40px; font-size: 1.2rem; }
+            header h1 { font-size: 1.8rem; }
+            .container { padding: 1.5rem 1rem; }
+        }
+
+        @media (max-width: 400px) {
+            .binary-bits-container { gap: 6px; }
+            .binary-bit { width: 38px; height: 38px; font-size: 1.1rem; }
+            .power-of-two { font-size: 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="theme-switcher">
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <header>
+            <h1>Binary Converter</h1>
+            <p>Instantly convert between binary and decimal.</p>
+        </header>
+
+        <main>
+            <div class="converter-wrapper">
+                <div class="converter">
+                    <label for="decimal-input">Decimal (Base 10)</label>
+                    <input type="number" id="decimal-input" placeholder="e.g. 42">
+                </div>
+                <div class="converter">
+                    <label for="binary-input">Binary (Base 2)</label>
+                    <input type="text" id="binary-input" placeholder="e.g. 101010">
+                </div>
+            </div>
+
+            <div class="binary-illustration">
+                <h3>Binary Visualization</h3>
+                <div class="binary-bits-container" id="binary-bits-container">
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Copyright &copy; 2025 Portkey Media</p>
+        </footer>
+    </div>
+
+    <script>
+        const decimalInput = document.getElementById('decimal-input');
+        const binaryInput = document.getElementById('binary-input');
+        const binaryBitsContainer = document.getElementById('binary-bits-container');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        function decToBin(decimal) {
+            if (decimal === 0) return '0';
+            if (!Number.isInteger(decimal) || decimal < 0) return '';
+            let binary = '';
+            while (decimal > 0) {
+                binary = (decimal % 2) + binary;
+                decimal = Math.floor(decimal / 2);
+            }
+            return binary;
+        }
+
+        function binToDec(binary) {
+            if (binary === '') return '';
+            return parseInt(binary, 2);
+        }
+
+        function handleDecimalInput(e) {
+            const val = e.target.value;
+            if (val === '' || val.includes('.')) {
+                binaryInput.value = '';
+                updateBinaryIllustration('');
+                return;
+            }
+            const decimalValue = parseInt(val, 10);
+            const binaryValue = decToBin(decimalValue);
+            binaryInput.value = binaryValue;
+            updateBinaryIllustration(binaryValue);
+        }
+
+        function handleBinaryInput(e) {
+            const val = e.target.value.replace(/[^01]/g, '');
+            e.target.value = val;
+            const decimalValue = binToDec(val);
+            decimalInput.value = decimalValue === '' ? '' : decimalValue;
+            updateBinaryIllustration(val);
+        }
+
+        function updateBinaryIllustration(binaryString) {
+            binaryBitsContainer.innerHTML = '';
+            if (binaryString === '') {
+                return;
+            }
+            
+            const minBits = 8;
+            const currentLength = binaryString.length;
+            const paddedLength = Math.max(minBits, Math.ceil(currentLength / 4) * 4);
+            const bits = binaryString.padStart(paddedLength, '0').split('');
+
+            for (let i = 0; i < bits.length; i++) {
+                const bit = bits[i];
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('binary-bit-wrapper');
+
+                const bitElement = document.createElement('div');
+                bitElement.classList.add('binary-bit');
+                if (bit === '1') {
+                    // Stagger the animation for a nice effect
+                    setTimeout(() => bitElement.classList.add('on'), i * 50);
+                }
+                bitElement.textContent = bit;
+
+                const powerOfTwoElement = document.createElement('span');
+                powerOfTwoElement.classList.add('power-of-two');
+                powerOfTwoElement.textContent = Math.pow(2, bits.length - 1 - i);
+                
+                wrapper.appendChild(bitElement);
+                wrapper.appendChild(powerOfTwoElement);
+                binaryBitsContainer.appendChild(wrapper);
+            }
+        }
+
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark'); // Save theme preference
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        decimalInput.addEventListener('input', handleDecimalInput);
+        binaryInput.addEventListener('input', handleBinaryInput);
+        themeToggle.addEventListener('change', switchTheme);
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.checked = true;
+        }
+        updateBinaryIllustration('');
+    </script>
+</body>
+</html>
